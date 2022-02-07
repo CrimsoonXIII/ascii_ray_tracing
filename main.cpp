@@ -12,11 +12,20 @@
 #include<tuple>
 #include<thread>
 using namespace std;
+
+const int WIDTH = 206;
+const int HEIGHT = 116;
+const float RATIO = (float)WIDTH/HEIGHT;
+const int palette_size = 42;
+const char palette[] = " .,:;^+<il!t?I[{1jrcoaxznumbOkhXQ8&Z0#MWB@";
+
 tuple<int, vec3, vec3> check_ray(const vector<vec3>& VB, vec3 d, vec3 P)
+//based on vertex buffer - VB, ray direction vector - d and vectors initial point - P finds which triangle ray hits first
+//returns tuple of index of first point of this triangle, normal vector of this triangle and point of intersection
 {
     d = d / d.length();
-    vec3 A, B, C;//points of triangle and vec3 describing brightness, opacity and reflectiveness
-    vec3 AB, AC, n, Q;//
+    vec3 A, B, C;//points of triangle
+    vec3 AB, AC, n, Q;
     float dp, t;
 
     int index_closest = -1;
@@ -61,6 +70,7 @@ tuple<int, vec3, vec3> check_ray(const vector<vec3>& VB, vec3 d, vec3 P)
 }
 
 bool shadow_check(const vector<vec3>& VB, vec3 d, vec3 P)
+//based on vertex buffer - VB, vector pointing towards light source - d and point of ray-triangle intersection - P checks whether point of intersection is in shadow
 {
     d = d / d.length();
     vec3 A, B, C;//points of triangle and vec3 describing brightness, opacity and reflectiveness
@@ -95,6 +105,7 @@ bool shadow_check(const vector<vec3>& VB, vec3 d, vec3 P)
 }
 
 float calc_ray(const vector<vec3>& VB, vector<point_light>& LS, vec3 d, vec3 P, int reflection_depth, float default_b)
+//based on vertex buffer - VB, vector of light sources - LS, ray direction vector - d, initial point of this vector - P, and default brightness if no triangles were hit - default_b, calculates brightness of the point ray landed on
 {
     tuple<int, vec3, vec3> closest_triangle = check_ray(VB,d, P);
 
@@ -133,12 +144,7 @@ float calc_ray(const vector<vec3>& VB, vector<point_light>& LS, vec3 d, vec3 P, 
 }
 
 
-const int WIDTH = 206;
-const int HEIGHT = 117;
-const float RATIO = (float)WIDTH/HEIGHT;
-const int palette_size = 42;
 
-const char palette[] = " .,:;^+<il!t?I[{1jrcoaxznumbOkhXQ8&Z0#MWB@";
 int main()
 {
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -193,9 +199,9 @@ int main()
     vector<point_light> LS =
     {
         /*{0.25f,(vec3){-2.0f,  3.75f, 3.5f}*1.5f},
-        {0.25f,(vec3){-2.5f,  3.75f, 3.5f}*1.5f},
-        {0.25f,(vec3){-2.0f,  3.5f , 3.5f}*1.5f},*/
-        {1.0f,(vec3){-2.5f,  3.5f , 3.5f}*1.5f}
+        {0.25f,(vec3){-2.5f,  3.75f, 3.5f}*1.5f},*/
+        {0.5f,(vec3){-2.0f,  3.5f , 3.5f}*1.5f},
+        {0.5f,(vec3){-2.5f,  3.5f , 3.5f}*1.5f}
     };
     for(float i = -3.5f; i <= 3.5f; i++)
         for(float j = -3.5f; j <= 3.5f; j++)
@@ -213,7 +219,7 @@ int main()
     char screen[(WIDTH+1)*HEIGHT];
     int rot_time;
     vector<thread> ThreadVector;
-    while(c_time - s_time < CLOCKS_PER_SEC * 20)
+    while(c_time - s_time < CLOCKS_PER_SEC * 15)
     {
 
         rot_time = clock();
@@ -233,7 +239,7 @@ int main()
             float temp;
             for(int j = 0; j < WIDTH; j++)
             {
-                temp = calc_ray(VB, LS, (vec3(2.0f*(j-WIDTH/2)/WIDTH, 2.0f/RATIO*(i-HEIGHT/2)/HEIGHT ,0.0f)+d), P, 2, 0.0f);
+                temp = calc_ray(VB, LS, (vec3(2.0f*(j-WIDTH/2)/WIDTH, 2.0f/RATIO*(i-HEIGHT/2)/HEIGHT ,0.0f)+d), P, 1, 0.0f);
                 screen[(HEIGHT - i - 1)*(WIDTH + 1) + j] = palette[(int)((palette_size -1)*temp)];
             }
         }, i);
