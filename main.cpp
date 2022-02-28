@@ -13,11 +13,15 @@
 #include<thread>
 using namespace std;
 
-const int WIDTH = 206;
-const int HEIGHT = 116;
-const float RATIO = (float)WIDTH/HEIGHT;
+const int P_WIDTH = 1200;
+const int P_HEIGHT = 675;
+const int C_WIDTH = 6;
+const C_HEIGHT = 12;
+const int WIDTH = P_WIDTH/C_WIDTH;
+const int HEIGHT = P_HEIGHT/C_HEIGHT;
+const float RATIO = (float)P_WIDTH/P_HEIGHT;
 const int palette_size = 42;
-const char palette[] = " .,:;^+<il!t?I[{1jrcoaxznumbOkhXQ8&Z0#MWB@";
+const char palette[palette_size] = " .,:;^+<il!t?I[{1jrcoaxznumbOkhXQ8&Z0#MWB@";
 
 tuple<int, vec3, vec3> check_ray(const vector<vec3>& VB, vec3 d, vec3 P)
 //based on vertex buffer - VB, ray direction vector - d and vectors initial point - P finds which triangle ray hits first
@@ -240,6 +244,8 @@ int main()
             for(int j = 0; j < WIDTH; j++)
             {
                 temp = calc_ray(VB, LS, (vec3(2.0f*(j-WIDTH/2)/WIDTH, 2.0f/RATIO*(i-HEIGHT/2)/HEIGHT ,0.0f)+d), P, 1, 0.0f);
+                if(temp > 1.0f) 
+                    temp = 1.0f;
                 screen[(HEIGHT - i - 1)*(WIDTH + 1) + j] = palette[(int)((palette_size -1)*temp)];
             }
         }, i);
