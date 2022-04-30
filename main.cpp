@@ -16,7 +16,7 @@ using namespace std;
 const int P_WIDTH = 1200;
 const int P_HEIGHT = 675;
 const int C_WIDTH = 6;
-const C_HEIGHT = 12;
+const int C_HEIGHT = 12;
 const int WIDTH = P_WIDTH/C_WIDTH;
 const int HEIGHT = P_HEIGHT/C_HEIGHT;
 const float RATIO = (float)P_WIDTH/P_HEIGHT;
