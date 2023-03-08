@@ -7,11 +7,10 @@
 #include <windows.h>
 #include <vector>
 #include <cfloat>
-#include "matrix_operations.h"
+#include "m_math/matrix_operations.h"
 #include "light.h"
 #include<tuple>
 #include<thread>
-using namespace std;
 
 const int P_WIDTH = 1200;
 const int P_HEIGHT = 675;
@@ -23,7 +22,7 @@ const float RATIO = (float)P_WIDTH/P_HEIGHT;
 const int palette_size = 42;
 const char palette[palette_size] = {' ','.',',',':',';','^','+','<','i','l','!','t','?','I','[','{','1','j','r','c','o','a','x','z','n','u','m','b','O','k','h','X','Q','8','&','Z','0','#','M','W','B','@'};
 
-tuple<int, vec3, vec3> check_ray(const vector<vec3>& VB, vec3 d, vec3 P)
+std::tuple<int, vec3, vec3> check_ray(const std::vector<vec3>& VB, vec3 d, vec3 P)
 //based on vertex buffer - VB, ray direction vector - d and vectors initial point - P finds which triangle ray hits first
 //returns tuple of index of first point of this triangle, normal vector of this triangle and point of intersection
 {
@@ -70,10 +69,10 @@ tuple<int, vec3, vec3> check_ray(const vector<vec3>& VB, vec3 d, vec3 P)
             }
         }
     }
-    return make_tuple(index_closest, normal_closest, x_closest);
+    return std::make_tuple(index_closest, normal_closest, x_closest);
 }
 
-bool shadow_check(const vector<vec3>& VB, vec3 d, vec3 P)
+bool shadow_check(const std::vector<vec3>& VB, vec3 d, vec3 P)
 //based on vertex buffer - VB, vector pointing towards light source - d and point of ray-triangle intersection - P checks whether point of intersection is in shadow
 {
     d = d / d.length();
@@ -108,16 +107,16 @@ bool shadow_check(const vector<vec3>& VB, vec3 d, vec3 P)
     return false;
 }
 
-float calc_ray(const vector<vec3>& VB, vector<point_light>& LS, vec3 d, vec3 P, int reflection_depth, float default_b)
+float calc_ray(const std::vector<vec3>& VB, std::vector<point_light>& LS, vec3 d, vec3 P, int reflection_depth, float default_b)
 //based on vertex buffer - VB, vector of light sources - LS, ray direction vector - d, initial point of this vector - P, and default brightness if no triangles were hit - default_b, calculates brightness of the point ray landed on
 {
-    tuple<int, vec3, vec3> closest_triangle = check_ray(VB,d, P);
+    std::tuple<int, vec3, vec3> closest_triangle = check_ray(VB,d, P);
 
-    int index = get<0>(closest_triangle);
+    int index = std::get<0>(closest_triangle);
     if(index == -1)
         return default_b;
-    vec3 n = get<1>(closest_triangle);
-    vec3 Q = get<2>(closest_triangle);
+    vec3 n = std::get<1>(closest_triangle);
+    vec3 Q = std::get<2>(closest_triangle);
     float ilumination = 0.0f;
     vec3 l;
     float temp;
@@ -158,7 +157,7 @@ int main()
     vec3 d = {-0.0f,-0.75f,-1.0f};
     vec3 P = { 0.0f, 4.0f, 7.50f};
 
-    vector<vec3> cube =
+    std::vector<vec3> cube =
     {
         { 1.0f, 1.0f, 1.0f},{-1.0f, 1.0f, 1.0f},{-1.0f,-1.0f, 1.0f},{1.0f, 1.0f, 0.5f},
         { 1.0f, 1.0f, 1.0f},{-1.0f,-1.0f, 1.0f},{ 1.0f,-1.0f, 1.0f},{1.0f, 1.0f, 0.5f},
@@ -182,7 +181,7 @@ int main()
         { 1.0f, 1.0f, 1.0f},{ 0.0f, 1.75f, 0.0f},{-1.0f, 1.0f, 1.0f},{1.0f, 1.0f, 0.5f},
         { 1.0f, 1.0f,-1.0f},{ 0.0f, 1.75f, 0.0f},{ 1.0f, 1.0f, 1.0f},{1.0f, 1.0f, 0.5f}
     };
-    vector<vec3> VB;
+    std::vector<vec3> VB;
     float cube_size = 1.5f;
     float cube_offset = 3.0f;
     for(float i = -0.5f; i <= 0.5f; i++)
@@ -191,38 +190,38 @@ int main()
         {
             for(int k = 0; k < cube.size(); k+=4)
             {
-                VB.push_back(cube[k  ]*(cube_size/2) + (vec3){i*cube_offset, 0.5f, j*cube_offset});
-                VB.push_back(cube[k+1]*(cube_size/2) + (vec3){i*cube_offset, 0.5f, j*cube_offset});
-                VB.push_back(cube[k+2]*(cube_size/2) + (vec3){i*cube_offset, 0.5f, j*cube_offset});
+                VB.push_back(cube[k  ]*(cube_size/2) + vec3({ i* cube_offset, 0.5f, j* cube_offset }));
+                VB.push_back(cube[k+1]*(cube_size/2) + vec3({ i* cube_offset, 0.5f, j* cube_offset }));
+                VB.push_back(cube[k+2]*(cube_size/2) + vec3({ i* cube_offset, 0.5f, j* cube_offset }));
                 VB.push_back(cube[k+3]);
             }
         }
     }
 
     int model_size = VB.size();
-    vector<point_light> LS =
+    std::vector<point_light> LS =
     {
         /*{0.25f,(vec3){-2.0f,  3.75f, 3.5f}*1.5f},
         {0.25f,(vec3){-2.5f,  3.75f, 3.5f}*1.5f},*/
-        {0.5f,(vec3){-2.0f,  3.5f , 3.5f}*1.5f},
-        {0.5f,(vec3){-2.5f,  3.5f , 3.5f}*1.5f}
+        {0.5f,vec3({ -2.0f,  3.5f , 3.5f })*1.5f},
+        {0.5f,vec3({-2.5f,  3.5f , 3.5f})*1.5f}
     };
     for(float i = -3.5f; i <= 3.5f; i++)
         for(float j = -3.5f; j <= 3.5f; j++)
         {
-                VB.push_back((vec3){ 2.5f*(i + 0.5f),-1.0f, 2.5f*(j + 0.5f)});
-                VB.push_back((vec3){ 2.5f*(i + 0.5f),-1.0f, 2.5f*(j - 0.5f)});
-                VB.push_back((vec3){ 2.5f*(i - 0.5f),-1.0f, 2.5f*(j - 0.5f)});
+                VB.push_back({ 2.5f*(i + 0.5f),-1.0f, 2.5f*(j + 0.5f)});
+                VB.push_back({ 2.5f*(i + 0.5f),-1.0f, 2.5f*(j - 0.5f)});
+                VB.push_back({ 2.5f*(i - 0.5f),-1.0f, 2.5f*(j - 0.5f)});
                 VB.push_back({0.9f*((float)((int)abs(i - j)%2)+ 0.1f), 1.0f, 0.3f});
 
-                VB.push_back((vec3){ 2.5f*(i + 0.5f),-1.0f, 2.5f*(j + 0.5f)});
-                VB.push_back((vec3){ 2.5f*(i - 0.5f),-1.0f, 2.5f*(j - 0.5f)});
-                VB.push_back((vec3){ 2.5f*(i - 0.5f),-1.0f, 2.5f*(j + 0.5f)});
+                VB.push_back({ 2.5f*(i + 0.5f),-1.0f, 2.5f*(j + 0.5f)});
+                VB.push_back({ 2.5f*(i - 0.5f),-1.0f, 2.5f*(j - 0.5f)});
+                VB.push_back({ 2.5f*(i - 0.5f),-1.0f, 2.5f*(j + 0.5f)});
                 VB.push_back({0.9f*((float)((int)abs(i - j)%2) + 0.1f), 1.0f, 0.3f});
         }
     char screen[(WIDTH+1)*HEIGHT];
     int rot_time;
-    vector<thread> ThreadVector;
+    std::vector<std::thread> ThreadVector;
     while(c_time - s_time < CLOCKS_PER_SEC * 15)
     {
 
@@ -256,7 +255,7 @@ int main()
 
         }
         SetConsoleCursorPosition(hConsole, {0,1});
-        puts(screen);
+        std::puts(screen);
 
     }
 
